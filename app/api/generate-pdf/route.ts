@@ -1,8 +1,30 @@
 import { NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
 import { remark } from 'remark';
 import html from 'remark-html';
 import gfm from 'remark-gfm';
+// Conditional imports for Vercel vs Local
+import chromium from '@sparticuz/chromium';
+import puppeteerCore from 'puppeteer-core';
+// We still import standard puppeteer for types, but generally we rely on puppeteer-core at runtime in prod
+// For local dev, we might need to rely on a local chrome or the standard puppeteer if we kept it.
+// To keep it simple: We will try to use puppeteer-core for everything if possible, 
+// but local dev usually needs a valid executablePath.
+import puppeteer from 'puppeteer'; // We kept this dependency for local dev
+
+// ... (CSS remains the same, assuming it's above line 102 but let's check context)
+// Wait, I need to see where imports are.
+// I will just replace the imports and the launch logic.
+// Checking previous file content... imports are at lines 1-5.
+// Launch logic is at 174.
+
+// I will do two edits. One for imports, one for logic.
+// Actually multi_replace is safer if lines are far apart.
+// Imports are lines 1-5.
+// Logic is 174+.
+
+// Let's replace the whole file? No, that's expensive.
+// I'll do imports first.
+
 
 // We duplicate the CSS here to ensure the PDF renders identically to the preview.
 // In a production app, we might read this from the filesystem or use a shared CSS-in-JS solution.
@@ -228,10 +250,23 @@ export async function POST(req: Request) {
     `;
 
     // Launch Puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
+    let browser;
+    if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+      // Running on Vercel / Lambda
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: { width: 1920, height: 1080 },
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+    } else {
+      // Running Locally
+      browser = await puppeteer.launch({
+         headless: true,
+         args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+    }
+ 
     const page = await browser.newPage();
 
     await page.setContent(finalHtml, { waitUntil: 'networkidle0' });
