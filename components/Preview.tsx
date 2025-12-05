@@ -15,7 +15,7 @@ export default function Preview({ content, id }: PreviewProps) {
   return (
     <div 
       id={id}
-      className="markdown-body w-full max-w-[210mm] mx-auto min-h-[297mm] p-[15mm] bg-white text-black shadow-lg"
+      className="markdown-body w-full max-w-[210mm] mx-auto min-h-[297mm] p-[15mm] bg-white text-black shadow-lg page-break-markers"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
